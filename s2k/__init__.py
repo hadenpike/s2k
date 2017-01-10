@@ -23,6 +23,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import print_function
+
+import os
 import smtplib
 import sys
 
@@ -92,7 +95,16 @@ def send_to_kindle(sender, rcpt, username, password, server, port, files = None)
     _send_msg(msg, username, password, server, port)
 
 def main():
-    send_to_kindle(*sys.argv[1:7], files = sys.argv[7:])
+    import config
+    configfile = os.path.join(os.environ['HOME'], '.s2krc')
+    is_valid, cfg = config.initialize(configfile)
+    if is_valid != True:
+        print("Configuration error:", is_valid)
+        sys.exit(1)
+
+    send_to_kindle(
+        cfg['from'], cfg['to'], cfg['username'], cfg['password'], cfg['server'],
+        cfg['port'], files = sys.argv[1:])
 
 if __name__ == '__main__':
     main()
