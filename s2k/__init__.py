@@ -24,11 +24,14 @@
 # SOFTWARE.
 
 import smtplib
+import sys
 
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.utils import formatdate
 from os.path import basename
+
+__all__ = ['send_to_kindle']
 
 def _prepare_msg(sender, rcpt, convert = False, files = None):
     """Format the message to be sent to Kindle.
@@ -83,3 +86,13 @@ def _send_msg(msg, username, password, server, port):
     smtp.login(username, password)
     smtp.sendmail(msg['From'], msg['To'], msg.as_string())
     smtp.close()
+
+def send_to_kindle(sender, rcpt, username, password, server, port, files = None):
+    msg = _prepare_msg(sender, rcpt, convert = False, files = files)
+    _send_msg(msg, username, password, server, port)
+
+def main():
+    send_to_kindle(*sys.argv[1:7], files = sys.argv[7:])
+
+if __name__ == '__main__':
+    main()
