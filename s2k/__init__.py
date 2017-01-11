@@ -90,21 +90,31 @@ def _send_msg(msg, username, password, server, port):
     smtp.sendmail(msg['From'], msg['To'], msg.as_string())
     smtp.close()
 
-def send_to_kindle(sender, rcpt, username, password, server, port, files = None):
-    msg = _prepare_msg(sender, rcpt, convert = False, files = files)
+def send_to_kindle(sender, rcpt, username, password, server, port, convert = False, files = None):
+    msg = _prepare_msg(sender, rcpt, convert = convert, files = files)
     _send_msg(msg, username, password, server, port)
 
 def main():
+    import argparse
     import config
-    configfile = os.path.join(os.environ['HOME'], '.s2krc')
-    is_valid, cfg = config.initialize(configfile)
+    parser = argparse.ArgumentParser(description = "Send files to your Kindle email")
+    parser.add_argument("-cf", "--configfile", type = str, dest = "configfile",
+                        default = os.path.join(os.environ['HOME'], '.s2krc'),
+                        help = "Location of configuration file.")
+    parser.add_argument("-c", "--convert", dest = "convert",
+                        action = "store_true", default = False,
+                        help = "Request the Kindle service to convert files to internal format.")
+    parser.add_argument("files", metavar = 'f', nargs = '+', action = "store",
+                        help = "Files to send to Kindle.")
+    args = parser.parse_args()
+    is_valid, cfg = config.initialize(args.configfile)
     if is_valid != True:
         print("Configuration error:", is_valid)
         sys.exit(1)
 
     send_to_kindle(
         cfg['from'], cfg['to'], cfg['username'], cfg['password'], cfg['server'],
-        cfg['port'], files = sys.argv[1:])
+        cfg['port'], convert = args.convert, files = args.files)
 
 if __name__ == '__main__':
     main()
